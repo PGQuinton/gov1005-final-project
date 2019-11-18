@@ -11,6 +11,8 @@ options(scipen = 999)
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
+
+dir.create("Graphics")
 ```
 
 ```{r data}
@@ -21,18 +23,21 @@ zillow_data <- read.csv("Metro_Zhvi_SingleFamilyResidence.csv")
 
 #I just made a simple ggplot with geom point to observe the relationship between population and median home value at one point in time. Logged the x axis because I thought that made the data easier to visualize because there were several cities with extremely high median home values. 
 
-zillow_data %>%
+plot1 <- zillow_data %>%
   ggplot(aes(x=X2019.08, y=SizeRank)) +
     geom_point() +
     scale_x_log10() + 
-    geom_smooth(method = "lm") +
+    scale_y_reverse() +
+    geom_smooth(method = "lm", se = FALSE) +
     labs(title = "Relationship Between Population and Median House Price",
          subtitle = "Data from the 805 largest cities in the United States as of July, 2019",
          x = "Median House Price ($)",
          y = "Population Ranked",
-         caption = "As the plot shows, there is a positive relationship between population and median house price.\nAdmittedly, the y-axis is slightly misleading because the largest cities are at the bottom while the smallest cities\nare at the top.") +
+         caption = "As the plot shows, there is a positive relationship between population and median house price.\nThe scale on the y-axis has been flipped so the most populous cities are at the top and the least populous cities are at the bottom.") +
   theme(
     plot.caption = element_text(hjust = 0)
   )
+
+write_rds(plot1, "Graphics/plot1.rds")
 ```
 
