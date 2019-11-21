@@ -1,0 +1,73 @@
+---
+title: "Prep"
+author: "Pieter Quinton"
+date: "11/19/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r libraries}
+
+# Load in the libraries needed for data cleaning
+
+library(fs)
+library(tidyverse)
+
+# Create two new directories to hold my cleaned data and graphics
+
+dir_create("data")
+dir_create("graphics")
+```
+
+```{r data}
+
+# Main data for the first tab in the shiny app.
+# Added rowname column to provide an inverse population ranked column.
+# Re-arranged the dataset so it would be in the order I want for the pickerInput in shiny.
+
+zillow_data_cities <- read.csv("data/Metro_Zhvi_SingleFamilyResidence.csv") %>%
+  filter(RegionName != "United States") %>%
+  arrange(desc(SizeRank)) %>%
+  add_rownames(var = "rowname") %>%
+  arrange(SizeRank)
+
+# Wrote the cleaned data in to the shiny app.
+
+write_csv(zillow_data_cities, "Draft/cities.csv")
+
+# Permits data
+# Working on getting this into the app but it will contribute to the Portland tab.
+
+permitsPortland_all <- read_csv("data/BuildingPermitsAll.csv")
+
+# Subset of the above data that's just for 2019.
+
+permitsPortland <- read_csv("data/BuildingPermits.csv")
+
+# Data from Zillow broken down by county rather than city
+# Filtered to just get data from the counties in the Portland Metro Area.
+# Some of those counties are in Washington state.
+
+zillow_data_counties <- read_csv("data/County_Zhvi_AllHomes.csv") %>%
+  filter(str_detect(Metro, "Portland") & State %in% c("OR", "WA"))
+
+# Data from Zillow broken down by neighborhood.
+# Filtered to just get neighborhoods in Portland, OR
+# Gathered the data to change it from wide data to long data.
+# Now, each observation is its own row.
+# Mutated the date column to change it from character to datetime. Had to add a generic day (1) to each month to make that mutation.
+
+zillow_data_neighborhoods <- read_csv("data/Neighborhood_Zhvi_AllHomes.csv") %>%
+  filter(City == "Portland" & State == "OR") %>%
+  gather(date, median, 8:289) %>%
+  mutate(date = as.POSIXct(paste(date,"-01",sep="")))
+
+# Wrote the cleaned data to the shiny folder.
+
+write_csv(zillow_data_neighborhoods, "Draft/neighborhoods.csv")
+```
+
+
